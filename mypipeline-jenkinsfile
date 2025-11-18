@@ -1,0 +1,105 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '📥 Récupération du code source...'
+                checkout scm
+            }
+        }
+        
+        stage('Compile') {
+            steps {
+                echo '🔨 Compilation...'
+                sh 'mvn clean compile'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                echo '🧪 Tests (skipped)...'
+                sh 'mvn test -DskipTests'
+            }
+        }
+        
+        stage('Package') {
+            steps {
+                echo '📦 Packaging...'
+                sh 'mvn package -DskipTests'
+            }
+        }
+        
+        stage('Archive') {
+            steps {
+                echo '📂 Archivage des artifacts...'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '✅ Build réussi ! Artifact créé dans target/'
+        }
+        failure {
+            echo '❌ Le build a échoué. Vérifiez les logs.'
+        }
+        always {
+            echo '🏁 Pipeline terminé.'
+        }
+    }
+}
+
+5. **Commit new file** → Message : `Add mypipeline-jenkinsfile`
+6. **Commit changes**
+
+---
+
+## 🔧 ÉTAPE 2 : CRÉER LE NOUVEAU PIPELINE DANS JENKINS
+
+### **A. Créer le job**
+
+1. Allez sur Jenkins : `http://192.168.33.10:8080`
+2. Cliquez sur **New Item** (Nouvel élément)
+3. Nom : `mypipeline-jenkinsfile`
+4. Sélectionnez : **Pipeline**
+5. Cliquez sur **OK**
+
+---
+
+### **B. Configurer le pipeline**
+
+#### **Section "General" :**
+- Description : `Pipeline utilisant mypipeline-jenkinsfile depuis GitHub`
+
+---
+
+#### **Section "Build Triggers" :**
+- ☑️ **Poll SCM**
+- Schedule : `H/2 * * * *`
+
+---
+
+#### **Section "Pipeline" :**
+
+1. **Definition** : Sélectionnez **Pipeline script from SCM**
+
+2. **SCM** : Sélectionnez **Git**
+
+3. **Repository URL** : 
+  https://github.com/chayma-rzig/student_management.git
+
+4. **Credentials** : (Si demandé, ajoutez vos credentials GitHub)
+
+5. **Branch Specifier** : 
+   */main
+
+6. **Script Path** : 
+ mypipeline-jenkinsfile
+
+
